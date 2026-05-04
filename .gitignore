@@ -1,0 +1,8 @@
+node_modules/
+options.json
+.anylist_credentials
+__pycache__/
+*.pyc
+.venv/
+dgappemail_master_token
+*.log

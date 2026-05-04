@@ -1,0 +1,26 @@
+name: Keep2AnyList
+version: "1.0.0"
+slug: keep2anylist
+description: Sync Google Keep lists to AnyList hourly.
+arch:
+  - aarch64
+  - armv7
+  - amd64
+startup: application
+boot: auto
+map:
+  - data:rw
+options:
+  GOOGLE_USERNAME: ""
+  GOOGLE_MASTER_TOKEN: ""
+  KEEP_LIST_NAME: ""
+  ANYLIST_USERNAME: ""
+  ANYLIST_PASSWORD: ""
+  ANYLIST_LIST_NAME: ""
+schema:
+  GOOGLE_USERNAME: str
+  GOOGLE_MASTER_TOKEN: password
+  KEEP_LIST_NAME: str
+  ANYLIST_USERNAME: str
+  ANYLIST_PASSWORD: password
+  ANYLIST_LIST_NAME: str
