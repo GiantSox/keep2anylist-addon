@@ -14,7 +14,7 @@ set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
 
-PYTHON=".venv/bin/python3"
+PYTHON="python3"
 
 echo "━━━ Step 1: Reading Keep items ━━━"
 $PYTHON keep_sync.py --read
