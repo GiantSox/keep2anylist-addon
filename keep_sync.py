@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/python3
 """
 keep_sync.py — Read/wipe/write items in a Google Keep list for two-way sync.
 
