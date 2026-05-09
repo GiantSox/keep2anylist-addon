@@ -7,7 +7,7 @@ INTERVAL=$(python3 -c "import json; print(json.load(open('/data/options.json')).
 # Clamp to minimum of 5 minutes
 if [ "$INTERVAL" -lt 5 ]; then INTERVAL=5; fi
 # Write crontab dynamically
-echo "*/$INTERVAL * * * * root /app/sync.sh >> /data/keep2anylist.log 2>&1" > /etc/cron.d/keep2anylist
+printf 'PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin\n*/%s * * * * root /app/sync.sh >> /data/keep2anylist.log 2>&1\n' "$INTERVAL" > /etc/cron.d/keep2anylist
 chmod 0644 /etc/cron.d/keep2anylist
 
 cron

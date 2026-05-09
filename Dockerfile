@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y curl cron && \
 
 WORKDIR /app
 
-RUN python3 -m pip install --no-cache-dir gkeepapi python-dotenv "urllib3<2"
+RUN python3 -m pip install --no-cache-dir gkeepapi python-dotenv "urllib3<2" \
+ && python3 -c "import gkeepapi; print('gkeepapi OK')"
 
 COPY package.json ./
 RUN npm install

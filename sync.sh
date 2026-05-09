@@ -14,7 +14,7 @@ set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
 
-PYTHON="python3"
+PYTHON="/usr/local/bin/python3"
 
 echo "━━━ Step 1: Reading Keep items ━━━"
 $PYTHON keep_sync.py --read
