@@ -1,5 +1,5 @@
 name: Keep2AnyList
-version: "1.0.0"
+version: "1.0.1"
 slug: keep2anylist
 description: Sync Google Keep lists to AnyList hourly.
 arch:
