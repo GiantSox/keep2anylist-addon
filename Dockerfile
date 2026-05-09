@@ -15,7 +15,5 @@ RUN npm install
 COPY keep_sync.py anylist_sync.mjs sync.sh run.sh ./
 RUN chmod +x sync.sh run.sh
 
-RUN echo "0 * * * * root /app/sync.sh >> /data/keep2anylist.log 2>&1" > /etc/cron.d/keep2anylist && \
-    chmod 0644 /etc/cron.d/keep2anylist
 
 CMD ["/app/run.sh"]
