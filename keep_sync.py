@@ -22,6 +22,7 @@ OPTIONS_FILE = next((p for p in _OPTIONS_CANDIDATES if os.path.exists(p)), _OPTI
 
 KEEP_READ_FILE = "/tmp/keep_read.json"
 ANYLIST_ITEMS_FILE = "/tmp/anylist_items.json"
+LAST_SYNCED_FILE = "/data/last_synced_to_keep.json"
 SUFFIX = " [S]"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -125,6 +126,16 @@ def write_items_to_keep(opts):
 
     keep.sync()
     log.info(f"Wrote {len(items)} item(s) to Keep list '{opts['KEEP_LIST_NAME']}' with '{SUFFIX}' suffix")
+
+    # Persist the snapshot so anylist_sync.mjs knows which items were written to
+    # Keep this cycle. Written *after* keep.sync() so it only records what
+    # actually made it into Keep — used next run to identify user-deleted items.
+    try:
+        with open(LAST_SYNCED_FILE, "w") as f:
+            json.dump(items, f, indent=2)
+        log.info(f"Saved sync state → {LAST_SYNCED_FILE}")
+    except Exception as e:
+        log.warning(f"Could not save sync state to {LAST_SYNCED_FILE}: {e}")
 
 
 if __name__ == "__main__":

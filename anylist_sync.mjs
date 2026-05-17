@@ -8,7 +8,12 @@
  *               Operations (in order, one connection):
  *                 1. Push new_items to AnyList (skip duplicates)
  *                 2. Delete items removed from Keep:
- *                      AnyList items NOT in synced_items AND NOT in new_items
+ *                      Items that were in last_synced_to_keep AND are no longer
+ *                      in synced_items (user deleted the [S] version from Keep).
+ *                      Items added directly to AnyList between syncs are NOT in
+ *                      last_synced_to_keep and are therefore preserved.
+ *                      If last_synced_to_keep doesn't exist (first run), skip
+ *                      deletions entirely.
  *                 3. Read full unchecked list → /tmp/anylist_items.json
  */
 
@@ -27,6 +32,7 @@ chdir(DATA_DIR);
 
 const KEEP_READ_FILE = "/tmp/keep_read.json";
 const ANYLIST_ITEMS_FILE = "/tmp/anylist_items.json";
+const LAST_SYNCED_FILE = `${DATA_DIR}/last_synced_to_keep.json`;
 
 function loadOptions() {
   return JSON.parse(readFileSync(OPTIONS_FILE, "utf8"));
@@ -49,6 +55,18 @@ async function fullSync() {
   const syncedLower = new Set(syncedItems.map((s) => s.toLowerCase()));
 
   console.log(`Keep read: ${newItems.length} new item(s), ${syncedItems.length} synced item(s)`);
+
+  // Load the snapshot of what was written to Keep at the end of the last sync.
+  // Only items in this snapshot are candidates for deletion — items added directly
+  // to AnyList between syncs will not be in lastSynced and are therefore safe.
+  let lastSynced = [];
+  try {
+    lastSynced = JSON.parse(readFileSync(LAST_SYNCED_FILE, "utf8"));
+    console.log(`Loaded last sync state: ${lastSynced.length} item(s) from ${LAST_SYNCED_FILE}`);
+  } catch (e) {
+    console.log(`No previous sync state (${LAST_SYNCED_FILE}) — deletions skipped this run.`);
+  }
+  const lastSyncedLower = new Set(lastSynced.map((s) => s.toLowerCase()));
 
   // ── Connect (single session) ─────────────────────────────────────────────
   const opts = loadOptions();
@@ -87,19 +105,22 @@ async function fullSync() {
   }
 
   // ── Step 2: Delete items user removed from Keep ──────────────────────────
-  // An AnyList item should be deleted if:
-  //   - synced_items was non-empty (we have a baseline to compare against)
-  //   - AND the item is NOT in synced_items (user deleted the [S] version from Keep)
-  //   - AND it is NOT a new item just pushed this cycle
+  // Correct rule: delete an AnyList item only if ALL three hold:
+  //   1. It was in AnyList at the end of last sync (present in lastSynced)
+  //      — items added directly to AnyList between syncs are NOT in lastSynced
+  //        and must never be deleted here.
+  //   2. It is NOT in Keep's current synced_items (user deleted the [S] entry)
+  //   3. It is NOT a new item being pushed from Keep this cycle
   //
-  // Guard: if synced_items is empty we have no deletion baseline — Keep either
-  // had no [S] items (first run, or was externally cleared) so we skip deletions.
-  if (syncedItems.length === 0) {
-    console.log("\nNo synced_items baseline — skipping deletion check.");
+  // If lastSynced is empty (first run, or /data state not yet written) we have
+  // no baseline and skip all deletions.
+  if (lastSynced.length === 0) {
+    console.log("\nNo previous sync state — skipping deletion check.");
   } else {
     const toDelete = list.items.filter(
       (i) =>
         !i.checked &&
+        lastSyncedLower.has(i.name.trim().toLowerCase()) &&
         !syncedLower.has(i.name.trim().toLowerCase()) &&
         !newLower.has(i.name.trim().toLowerCase())
     );
